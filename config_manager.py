@@ -7,7 +7,19 @@ import json
 import os
 import shutil
 import threading
+from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+
+def get_appdata_config_path() -> Path:
+    """Returns the persistent config.json path inside %APPDATA%/SoundboardPro/config.json."""
+    appdata = os.getenv("APPDATA")
+    if appdata:
+        base_dir = Path(appdata) / "SoundboardPro"
+    else:
+        base_dir = Path.home() / ".SoundboardPro"
+    base_dir.mkdir(parents=True, exist_ok=True)
+    return base_dir / "config.json"
 
 
 DEFAULT_CONFIG: Dict[str, Any] = {
@@ -26,8 +38,13 @@ DEFAULT_CONFIG: Dict[str, Any] = {
 
 
 class ConfigManager:
-    def __init__(self, config_path: str = "config.json"):
-        self.config_path = os.path.abspath(config_path)
+    def __init__(self, config_path: Optional[str] = None):
+        if config_path is None:
+            self.config_path = str(get_appdata_config_path())
+        else:
+            self.config_path = os.path.abspath(config_path)
+            os.makedirs(os.path.dirname(self.config_path), exist_ok=True)
+
         self._lock = threading.Lock()
         self._data: Dict[str, Any] = dict(DEFAULT_CONFIG)
         self.load()
@@ -59,6 +76,7 @@ class ConfigManager:
 
     def _save_unlocked(self) -> None:
         """Internal atomic save helper."""
+        os.makedirs(os.path.dirname(self.config_path), exist_ok=True)
         tmp_path = f"{self.config_path}.tmp"
         try:
             with open(tmp_path, "w", encoding="utf-8") as f:

@@ -41,8 +41,8 @@ def main():
         print("                Tip: Run as Administrator if global hotkeys do not respond while full-screen games are focused.")
 
     try:
-        # Initialize Core Subsystems
-        config_mgr = ConfigManager("config.json")
+        # Initialize Core Subsystems (Uses %APPDATA%/SoundboardPro/config.json)
+        config_mgr = ConfigManager()
         audio_eng = SoundboardEngine(
             samplerate=config_mgr.get("samplerate", 48000),
             blocksize=config_mgr.get("blocksize", 1024),

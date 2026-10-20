@@ -15,6 +15,7 @@ import customtkinter as ctk
 from audio_engine import SoundboardEngine
 from config_manager import ConfigManager
 from hotkey_manager import HotkeyManager
+from utils import ensure_starter_sounds, resource_path
 
 
 # Custom Color Palette
@@ -754,17 +755,17 @@ class SoundboardApp(ctk.CTk):
         """Loads sounds from config, pre-caches their buffers in memory, and renders cards."""
         sounds = self.config.get_sounds()
 
-        # If empty, check for pre-generated starter sounds
+        # If empty, ensure starter sounds are available in persistent AppData
         if not sounds:
-            starter_dir = os.path.abspath("assets/sounds")
-            if os.path.exists(starter_dir):
+            persistent_dir = ensure_starter_sounds()
+            if os.path.exists(persistent_dir):
                 defaults = [
                     ("Stadium Airhorn", "airhorn.wav", "F9"),
                     ("Gentle Chime", "chime.wav", "F10"),
                     ("Game Over", "game_over.wav", "F11"),
                 ]
                 for title, filename, key in defaults:
-                    fpath = os.path.join(starter_dir, filename)
+                    fpath = os.path.join(persistent_dir, filename)
                     if os.path.exists(fpath):
                         self.config.add_sound({
                             "id": str(uuid.uuid4()),
